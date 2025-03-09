@@ -4,6 +4,8 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
+from torchvision.models import ResNet50_Weights
+import os
 
 torch.backends.cudnn.benchmark = True
 
@@ -14,17 +16,26 @@ transform = transforms.Compose([
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
+# ✅ 데이터셋 저장 경로 설정
+data_path = "./data"
+
+# ✅ 데이터셋이 존재하는지 확인 후 다운로드 방지
+if not os.path.exists(os.path.join(data_path, "cifar-100-python")):
+    download_flag = True
+else:
+    download_flag = False
+
 # ✅ CIFAR-100 데이터셋 로드
 batch_size = 32
-trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform, )
+trainset = torchvision.datasets.CIFAR100(root=data_path, train=True, download=download_flag, transform=transform)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4)
 
-testset = torchvision.datasets.CIFAR100(root='./data', train=False, download=True, transform=transform)
+testset = torchvision.datasets.CIFAR100(root=data_path, train=False, download=download_flag, transform=transform)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=4)
 
-# ✅ ResNet50 모델 불러오기
+# ✅ ResNet50 모델 불러오기 (pretrained → weights 방식 변경)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = models.resnet50(pretrained=True)
+model = models.resnet50(weights=ResNet50_Weights.DEFAULT)  # 최신 방식으로 변경
 
 # ✅ CIFAR-100은 클래스가 100개이므로 fc 레이어 변경
 model.fc = nn.Linear(model.fc.in_features, 100)
@@ -49,7 +60,7 @@ for epoch in range(num_epochs):
 
         running_loss += loss.item()
     
-    print(f"Epoch {epoch+1}, Loss: {running_loss/len(trainloader)}")
+    print(f"Epoch {epoch+1}, Loss: {running_loss/len(trainloader):.4f}")
 
 print("Training Finished!")
 
