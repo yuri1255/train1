@@ -35,7 +35,7 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle
 
 # ✅ ResNet50 모델 로드 (pretrained → weights 방식 변경)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
+model = models.resnet50(weights=None)
 model.fc = nn.Linear(model.fc.in_features, 100)  # CIFAR-100 (100개 클래스)
 model = model.to(device)
 
@@ -44,7 +44,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # ✅ 모델 학습
-num_epochs = 5  # 원하는 epoch 수 설정
+num_epochs = 20  # 원하는 epoch 수 설정
 log_interval = len(trainloader) // 5  # 5번 정도 loss 출력하도록 step 설정
 
 for epoch in range(num_epochs):
